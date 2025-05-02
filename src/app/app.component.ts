@@ -1,4 +1,4 @@
-import { Component, ViewChild } from "@angular/core";
+import { Component, OnInit, ViewChild } from "@angular/core";
 
 import {
   ChartComponent,
@@ -32,7 +32,9 @@ export type ChartOptions = {
   ],
   styleUrls: ["./app.component.scss"]
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+
+
   public chartOptions: Partial<ChartOptions>;
 
   constructor() {
@@ -94,5 +96,39 @@ export class AppComponent {
         }
       ]
     };
+  }
+
+  ngOnInit() {
+    fetch("https://api.github.com/graphql", {
+      method: "POST",
+      headers: {
+        "Authorization": "bearer token",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        query: `
+      query {
+        user(login: "ghbarton") {
+          name
+          contributionsCollection {
+            contributionCalendar {
+              totalContributions
+              weeks {
+                contributionDays {
+                  contributionCount
+                  date
+                }
+                firstDay
+              }
+            }
+          }
+        }
+      }
+    `
+      })
+    })
+      .then(res => res.json())
+      .then(data => console.log(data))
+      .catch(err => console.error(err));
   }
 }
